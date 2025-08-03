@@ -7,3 +7,8 @@ if(a > 5 && b < 30){
 else{
     console.log("true");
 }
+
+//question
+let points = 24;
+let status = points > 10 ? "gold" : "silver";
+console.log(status);
