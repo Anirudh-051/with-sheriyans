@@ -43,3 +43,14 @@ function abcd(){
 (function(){
     console.log("iife");
 })();   
+
+//check if 18
+function checkAge(age){
+    if(age > 18){
+        console.log("eligible");
+    }
+    else{
+        console.log("not eligible");
+    }
+}
+checkAge(19);
