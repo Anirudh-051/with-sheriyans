@@ -20,3 +20,16 @@ let Arr5 = Arr4.filter(function(element){
     return element > 5;
 });
 console.log(Arr5);
+
+//print no. less than 5 using find
+let arr6 = [11,21,3,43,45];
+let arr7 = arr6.find(function(element){
+    return element < 5;
+});
+console.log(arr7);
+
+//add a and b using spred operator
+let a = 10;
+let b = 20;
+let c = [...a,...b];
+console.log(c);
