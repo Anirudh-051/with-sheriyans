@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3 id="heading">select your device</h3>
+    <select>
+        <option disabled selected>select your device</option>
+        <option value="iphone">iphone</option>
+        <option value="samsung">samsung</option>
+        <option value="nokia">nokia</option>
+    </select>
+    <script>
+        let sel = document.querySelector("select");
+        sel.addEventListener("change",function(){
+            let heading = document.querySelector("#heading");
+            heading.textContent = `You selected ${sel.value}`;
+            console.log(sel.value);
+        });
+    </script>
+</body>
+</html>

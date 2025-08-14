@@ -1,0 +1,40 @@
+<div class="main">
+    <input id = "inputfile" type = file>
+    <div class="btn">Upload</div>
+</div>
+<style>
+    input{
+        display: none;
+    }
+    .btn{
+        cursor: pointer;
+        padding: 10px 20px;
+        border-radius: 5px;
+        width: 10%;
+        background-color: rgb(49, 130, 70);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .btn:hover{
+        background-color: rgb(24, 77, 38);
+    }
+    .main{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+</style>
+<script>
+    let btn = document.querySelector(".btn");
+    let inputfile = document.querySelector("#inputfile");
+    btn.addEventListener("click",function(){
+        inputfile.click();
+    });
+    inputfile.addEventListener("change",function(){
+        btn.textContent = inputfile.files[0].name;
+    });
+</script>

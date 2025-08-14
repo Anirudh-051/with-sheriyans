@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="heading">1</h1>
+    <style>
+        #heading{
+            cursor: pointer;
+            font-size: 10rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+    </style>
+    <script>
+       let heading = document.querySelector("#heading");
+       window.addEventListener("keydown",function(dets){
+           if(dets.key === " "){
+               heading.textContent = "space";
+            }
+            else{
+                heading.textContent = dets.key;
+            }
+       });
+    </script>
+</body>
+</html>

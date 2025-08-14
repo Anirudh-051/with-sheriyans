@@ -6,13 +6,11 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>
-        This is a h1 text
-    </h1>
+    <button style="cursor: pointer;">Click me</button>
     <script>
-        let h1 = document.querySelector("h1");
-        h1.addEventListener("click",function(){
-            h1.textContent = "Hello World";
+        let btn = document.querySelector("button");
+        btn.addEventListener("dblclick",function(){
+            btn.textContent = "Why did you double click me";
         });
     </script>
 </body>
