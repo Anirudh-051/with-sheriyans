@@ -1,0 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+#main{
+    position: relative;
+    overflow: hidden;
+}
+#page{
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #171717;
+}
+#page1{
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+}
