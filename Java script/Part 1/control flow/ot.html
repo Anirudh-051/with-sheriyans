@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draggable Element</title>
+    <style>
+        body{
+            background-color: #222;
+        }
+        .drag {
+            position: absolute;
+            width: 150px;
+            height: 100px;
+            background-color: #6480b2;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+        }
+        .drag h3 {
+            margin: 0;
+            padding: 0;
+        }
+        .box {
+            height: 100px;
+            width: 150px;
+            border: 2px solid red;
+            position: absolute;
+            transform: translate(-50%,-50%);
+            top: 50%;
+            left: 50%;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .congrats {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .fire-effect {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            display: none;
+            z-index: 500;
+            animation: fire 2s ease-out;
+            transform-origin: center bottom;
+        }
+        
+        @keyframes fire {
+            0% { transform: scale(0.5); opacity: 0; }
+            20% { transform: scale(1.2); opacity: 1; }
+            80% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="drag" id="draggable">
+        <h3>Drag me!</h3>
+    </div>
+    <div class="box"></div>
+    <div class="congrats">Congrats! Perfect Fit! 🎉</div>
+    <div class="fire-effect" id="fireEffect">🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥</div>
+
+    <script>
+        const dragElement = document.getElementById('draggable');
+        const boxElement = document.querySelector('.box');
+        const congratsElement = document.querySelector('.congrats');
+        const fireEffect = document.getElementById('fireEffect');
+        let isDragging = false;
+        let offsetX, offsetY;
+        let isPerfectFit = false;
+        let velocityX = 0, velocityY = 0;
+        let lastX = 0, lastY = 0;
+        let animationFrameId = null;
+        const friction = 0.95; // Friction coefficient (0-1), higher means less friction
+        const minVelocity = 0.1; // Minimum velocity before stopping
+
+        dragElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            // Calculate the offset from the element's top-left corner to the mouse position
+            const rect = dragElement.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            
+            // Add styles while dragging
+            dragElement.style.opacity = '0.8';
+            dragElement.style.cursor = 'grabbing';
+            
+            e.preventDefault(); // Prevent text selection while dragging
+        });
+
+        const dragText = dragElement.querySelector('h3');
+        
+        function checkPerfectFit(x, y) {
+            const boxRect = boxElement.getBoundingClientRect();
+            const dragRect = dragElement.getBoundingClientRect();
+            
+            // Check if draggable is within the box with a small threshold
+            const threshold = 5; // pixels of tolerance
+            const isXAligned = Math.abs(dragRect.left - boxRect.left) < threshold && 
+                              Math.abs(dragRect.right - boxRect.right) < threshold;
+            const isYAligned = Math.abs(dragRect.top - boxRect.top) < threshold && 
+                              Math.abs(dragRect.bottom - boxRect.bottom) < threshold;
+            
+            return isXAligned && isYAligned;
+        }
+        
+        function updatePosition(x, y) {
+            // Get viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            // Get element dimensions
+            const elementWidth = dragElement.offsetWidth;
+            const elementHeight = dragElement.offsetHeight;
+            
+            // Check if hitting any boundary
+            const hitLeft = x <= 0;
+            const hitRight = x >= viewportWidth - elementWidth;
+            const hitTop = y <= 0;
+            const hitBottom = y >= viewportHeight - elementHeight;
+            
+            // Update text and background color if hitting any boundary
+            if (hitLeft || hitRight || hitTop || hitBottom) {
+                dragText.textContent = 'Ouch!';
+                dragElement.style.backgroundColor = '#f44336'; // Red color when hitting boundary
+            } else {
+                dragText.textContent = 'Drag me!';
+                dragElement.style.backgroundColor = '#6480b2'; // Default blue color
+            }
+            
+            // Keep element within viewport boundaries
+            x = Math.max(0, Math.min(x, viewportWidth - elementWidth));
+            y = Math.max(0, Math.min(y, viewportHeight - elementHeight));
+            
+            // Apply the new position
+            dragElement.style.left = `${x}px`;
+            dragElement.style.top = `${y}px`;
+            
+            // Check for perfect fit when not dragging (during momentum)
+            if (!isDragging) {
+                const currentIsPerfectFit = checkPerfectFit(x, y);
+                if (currentIsPerfectFit && !isPerfectFit) {
+                    // Show congrats and fire effect when just achieved perfect fit
+                    congratsElement.style.display = 'block';
+                    fireEffect.style.display = 'block';
+                    setTimeout(() => {
+                        congratsElement.style.display = 'none';
+                        fireEffect.style.display = 'none';
+                    }, 2000);
+                }
+                isPerfectFit = currentIsPerfectFit;
+            }
+            
+            return { x, y };
+        }
+        
+        function animate() {
+            // Apply velocity
+            if (Math.abs(velocityX) > minVelocity || Math.abs(velocityY) > minVelocity) {
+                const currentX = parseFloat(dragElement.style.left) || 0;
+                const currentY = parseFloat(dragElement.style.top) || 0;
+                
+                const newX = currentX + velocityX;
+                const newY = currentY + velocityY;
+                
+                const newPos = updatePosition(newX, newY);
+                
+                // Bounce off edges
+                if (newPos.x <= 0 || newPos.x >= window.innerWidth - dragElement.offsetWidth) {
+                    velocityX *= -0.7; // Bounce with some energy loss
+                }
+                if (newPos.y <= 0 || newPos.y >= window.innerHeight - dragElement.offsetHeight) {
+                    velocityY *= -0.7; // Bounce with some energy loss
+                }
+                
+                // Apply friction
+                velocityX *= friction;
+                velocityY *= friction;
+                
+                animationFrameId = requestAnimationFrame(animate);
+            } else {
+                // Stop animation when velocity is very low
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            }
+        }
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            // Calculate new position
+            const x = e.clientX - offsetX;
+            const y = e.clientY - offsetY;
+            
+            // Calculate velocity based on movement
+            velocityX = x - lastX;
+            velocityY = y - lastY;
+            
+            lastX = x;
+            lastY = y;
+            
+            updatePosition(x, y);
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            isDragging = false;
+            // Reset styles when dragging stops
+            dragElement.style.opacity = '1';
+            dragElement.style.cursor = 'move';
+            
+            // Check for perfect fit on mouse up
+            const rect = dragElement.getBoundingClientRect();
+            if (checkPerfectFit(rect.left, rect.top)) {
+                congratsElement.style.display = 'block';
+                fireEffect.style.display = 'block';
+                setTimeout(() => {
+                    congratsElement.style.display = 'none';
+                    fireEffect.style.display = 'none';
+                }, 2000);
+            }
+            
+            // Start momentum animation if there's enough velocity
+            if (Math.abs(velocityX) > minVelocity || Math.abs(velocityY) > minVelocity) {
+                if (!animationFrameId) {
+                    animate();
+                }
+            }
+        });
+        
+        // Stop momentum when clicking
+        dragElement.addEventListener('mousedown', (e) => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            isDragging = true;
+            // Reset velocity when starting new drag
+            velocityX = velocityY = 0;
+            
+            // Calculate the offset from the element's top-left corner to the mouse position
+            const rect = dragElement.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            
+            // Store initial position for velocity calculation
+            lastX = e.clientX - offsetX;
+            lastY = e.clientY - offsetY;
+            
+            // Add styles while dragging
+            dragElement.style.opacity = '0.8';
+            dragElement.style.cursor = 'grabbing';
+            
+            e.preventDefault(); // Prevent text selection while dragging
+        });
+    </script>
+</body>
+</html>
